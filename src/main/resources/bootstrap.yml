@@ -1,0 +1,58 @@
+server:
+  port: ${PORT:8761}
+
+spring:
+  application:
+    name: circuit-breaker
+  cloud:
+    config:
+      uri: ${SPRING_CONFIG_URI:http://localhost:8761/config
+      server:
+        prefix: /config
+        git:
+          uri: file://${user.home}/config-repo
+
+security:
+  basic:
+    enabled: false
+
+feign:
+  hystrix:
+    enabled: true
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: SEMAPHORE
+
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    hostname: localhost
+    metadataMap:
+      instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  dashboard:
+    path: /eureka-dashboard
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    region: default
+    registryFetchIntervalSeconds: 5
+    availabilityZones:
+      default: ${APPLICATION_DOMAIN:${DOMAIN:defaultZone}}
+    healthcheck:
+      enabled: true
+
+    circuit-breaker:
+      ribbon:
+        eureka:
+          enabled: true
+        ServerListRefreshInterval: 1000
+
+management:
+  endpoints:
+    web:
+      expose: "*"
+    sensitive: false
